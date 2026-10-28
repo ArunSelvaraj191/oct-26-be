@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/userSchema");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 router.post("/register", async (req, res) => {
   try {
@@ -28,16 +29,23 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    console.log("req from FE React js", req.body);
     const { email, password } = req.body;
     const userExist = await User.findOne({ email });
-    // console.log("userExist ::", userExist.password,password);
     const checkPass = await bcrypt.compare(password, userExist.password);
-    console.log("checkPass :::", checkPass);
     if (userExist.length == 0 || !checkPass) {
       return res.status(401).json({ message: "Email or Password not valid!" });
     } else {
-      return res.json({ message: "Login successfully!", user: userExist });
+      const JWT_SECRET = process.env.JWT_SECRET;
+      const payload = {
+        username: userExist.username,
+        email: userExist.email,
+      };
+      const token = jwt.sign(payload, JWT_SECRET);
+      return res.json({
+        message: "Login successfully!",
+        user: userExist,
+        token,
+      });
     }
   } catch (error) {
     res.status(500).json({ message: "Login Failed!", error: error.message });
