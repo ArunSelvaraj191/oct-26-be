@@ -5,10 +5,8 @@ const jwt = require("jsonwebtoken");
 
 router.post("/register", async (req, res) => {
   try {
-    console.log("req from FE React js", req.body);
     const { username, email, password } = req.body;
     const userExist = await User.find({ email });
-    console.log("userExist ::", userExist);
     if (userExist.length > 0) {
       return res
         .status(400)
